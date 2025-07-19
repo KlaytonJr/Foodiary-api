@@ -6,6 +6,7 @@ import { usersTable } from "../db/schema";
 import { HttpRequest, HttpResponse } from "../types/Http";
 import { badRequest, conflict, created } from "../utils/http";
 import { signAccessTokenFor } from "../lib/jwt";
+import { calculateGoals } from "../lib/calculateGoals";
 
 const schema = z.object({
   goal: z.enum(["lose", "maintain", "gain"]),
@@ -43,15 +44,23 @@ export class SignUpController {
     }
 
     const { account, ...rest } = data;
-
-    // cost factor entre 8 e 12 é o ideal
+    const goals = calculateGoals({
+      activityLevel: rest.activityLevel,
+      birthDate: new Date(rest.birthDate),
+      gender: rest.gender,
+      goal: rest.goal,
+      height: rest.height,
+      weight: rest.weight,
+    });
     const hashedPassword = await hash(account.password, 8);
+    // cost factor entre 8 e 12 é o ideal
 
     const [user] = await db
       .insert(usersTable)
       .values({
         ...account,
         ...rest,
+        ...goals,
         password: hashedPassword,
         calories: 0,
         carbohydrates: 0,
