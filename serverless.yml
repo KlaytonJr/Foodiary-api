@@ -25,6 +25,10 @@ provider:
           Resource: !Sub "${UploadsBucket.Arn}/*"
           # Resource: !GetAtt UploadsBucket.Arn
 
+        - Effect: Allow
+          Action: sqs:SendMessage
+          Resource: !GetAtt MealsQueue.Arn
+
 package:
   individually: true
 
