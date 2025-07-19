@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import z from "zod";
+import { hash } from "bcryptjs";
 import { db } from "../db";
 import { usersTable } from "../db/schema";
 import { HttpRequest, HttpResponse } from "../types/Http";
@@ -42,11 +43,15 @@ export class SignUpController {
 
     const { account, ...rest } = data;
 
+    // cost factor entre 8 e 12 é o ideal
+    const hashedPassword = await hash(account.password, 8);
+
     const [user] = await db
       .insert(usersTable)
       .values({
         ...account,
         ...rest,
+        password: hashedPassword,
         calories: 0,
         carbohydrates: 0,
         fats: 0,
